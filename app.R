@@ -1,4 +1,8 @@
 # app.R
+library(conflicted)
+conflict_prefer("filter", "dplyr")
+conflict_prefer("show", "shinyjs")
+conflict_prefer("layout", "plotly")
 library(shiny)
 library(shinyjs)
 library(bslib)
@@ -10,6 +14,7 @@ library(DT)
 library(plotly)
 library(tidyverse)
 
+
 write_rds(read_xlsx("data/admission.xlsx"), "data/admission.rds")
 write_rds(read_xlsx("data/diagnosis.xlsx"), "data/diagnosis.rds")
 write_rds(read_xlsx("data/icd10.xlsx"), "data/icd10.rds")
@@ -17,6 +22,7 @@ write_rds(read_xlsx("data/icd10.xlsx"), "data/icd10.rds")
 admission_df <- reactiveVal(readRDS("data/admission.rds"))
 diagnosis_df <- reactiveVal(readRDS("data/diagnosis.rds"))
 icd10_df     <- reactiveVal(readRDS("data/icd10.rds"))
+
 
 
 # -- 1. UI
@@ -392,8 +398,8 @@ server <- function(input, output, session) {
   output$los_by_source_plot <- renderPlotly({
     df <- computed()$transport %>% count(admsource) %>%
       mutate(label = paste0(adm_source_labels[admsource], " (", round(100 * n / sum(n), 1), "%)"))
-    plot_ly(df, x = ~label, y = ~n, type = "bar",
-            marker = list(color = RColorBrewer::brewer.pal(n = nrow(df), name = "Set3"))) %>%
+    plot_ly(df, labels = ~label, values = ~n, type = "pie",
+            marker = list(colors = RColorBrewer::brewer.pal(n = max(3, nrow(df)), name = "Set3")[1:nrow(df)])) %>%
       layout(title = "Phân bố nguồn nhập viện",
              xaxis = list(title = "Nguồn nhập viện"),
              yaxis = list(title = "Số ca"),
@@ -412,14 +418,20 @@ server <- function(input, output, session) {
   
   
   output$admtype_plot <- renderPlotly({
-    df <- computed()$transport %>% count(admtype)
-    plot_ly(df, x = ~admtype, y = ~n, type = "bar",
+    df <- computed()$transport %>%
+      count(admtype) %>%
+      arrange(n)
+    plot_ly(df, x = ~n, y = ~reorder(admtype, n), type = "bar",
+            orientation = 'h',
             marker = list(color = RColorBrewer::brewer.pal(n = nrow(df), name = "Set3"))) %>%
-      layout(title = "LOS theo loại nhập viện", 
-             yaxis = list(title = "Số ca"), 
-             xaxis = list(title = "Loại nhập viện"),
-             margin = list(t = 50))
+      layout(
+        title = "LOS theo loại nhập viện", 
+        yaxis = list(title = "Loại nhập viện"), 
+        xaxis = list(title = "Số ca"),
+        margin = list(t = 50)
+      )
   })
+  
   
   
   # Upload placeholder
