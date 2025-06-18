@@ -13,6 +13,7 @@ library(writexl)
 library(DT)
 library(plotly)
 library(tidyverse)
+library(markdown)
 
 
 if (interactive()) {
@@ -316,7 +317,7 @@ server <- function(input, output, session) {
     tagList(
       h3("ℹ️ Thông tin số liệu"),
       div(class = "content-box",
-          HTML(markdown::markdownToHTML(text = readLines("README.md"), fragment.only = TRUE))
+          includeMarkdown("README.md")
       )
     )
   }
@@ -325,7 +326,7 @@ server <- function(input, output, session) {
     tagList(
       h3("🔍 Đánh giá chất lượng số liệu (chờ cập nhật)"),
       div(class = "content-box",
-          HTML(markdown::markdownToHTML(text = readLines("document/danh_gia_chat_luong.md"), fragment.only = TRUE))
+          includeMarkdown("document/danh_gia_chat_luong.md")
       )
     )
   }
@@ -334,7 +335,7 @@ server <- function(input, output, session) {
     tagList(
       h3("❓ Hướng dẫn & Giới thiệu"),
       div(class = "content-box",
-          HTML(markdown::markdownToHTML(text = readLines("document/khai_thac_du_lieu.md"), fragment.only = TRUE))
+          includeMarkdown("document/khai_thac_du_lieu.md")
       )
     )
 }
