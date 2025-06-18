@@ -14,9 +14,11 @@ library(DT)
 library(plotly)
 library(tidyverse)
 
-write_rds(read_xlsx("data/admission.xlsx"), "data/admission.rds")
-write_rds(read_xlsx("data/diagnosis.xlsx"), "data/diagnosis.rds")
-write_rds(read_xlsx("data/icd10.xlsx"), "data/icd10.rds")
+if (interactive()) {
+  write_rds(read_xlsx("data/admission.xlsx"), "data/admission.rds")
+  write_rds(read_xlsx("data/diagnosis.xlsx"), "data/diagnosis.rds")
+  write_rds(read_xlsx("data/icd10.xlsx"), "data/icd10.rds")
+}
 
 admission_df <- reactiveVal(readRDS("data/admission.rds"))
 diagnosis_df <- reactiveVal(readRDS("data/diagnosis.rds"))
