@@ -120,9 +120,8 @@ ui <- fluidPage(
       a("Tải dữ liệu", href = "#!upload", id = "nav-upload", class = "nav-link"),
       strong("📈 Phân tích & Đánh giá"),
       a("Số ca TNGT theo tuổi & giới", href = "#!freq", id = "nav-freq", class = "nav-link"),
-      a("LOS theo nguồn nhập viện", href = "#!los_source", id = "nav-los_source", class = "nav-link"),
-      a("Tử vong / Ra viện", href = "#!sep_mode", id = "nav-sep_mode", class = "nav-link"),
-      a("Phân tích nhập viện", href = "#!adm_analysis", id = "nav-adm_analysis", class = "nav-link"),
+      a("Phân tích dữ liệu nhập viện", href = "#!adm_status", id = "nav-adm_status", class = "nav-link"),
+      a("Phân tích kết quả điều trị", href = "#!sep_mode", id = "nav-sep_mode", class = "nav-link"),
       strong("ℹ️ Thông tin dữ liệu"),
       a("Thông tin số liệu", href = "#!info", id = "nav-info", class = "nav-link"),
       a("Đánh giá chất lượng số liệu", href = "#!quality", id = "nav-quality", class = "nav-link"),
@@ -144,7 +143,7 @@ server <- function(input, output, session) {
   # Nav highlighting
   observe({
     current <- session$clientData$url_hash
-    navs <- c("dashboard","data_viewer","upload","freq","los_source","sep_mode","adm_analysis","info","about")
+    navs <- c("dashboard","data_viewer","upload","freq","sep_mode","adm_status","info","about")
     for(nav in navs) {
       active <- paste0("#!", nav) == current
       toggleClass(selector = paste0("#nav-", nav), class="active", condition=active)
@@ -235,11 +234,11 @@ server <- function(input, output, session) {
       ),
       fluidRow(
         column(6, div(class="content-box", h4("🔝 10 trường hợp TNGT"), DTOutput("top10_table"))),
-        column(6, div(class="content-box", h4("📑 Bảng chẩn thương thường gặp"), DTOutput("injuries_table")))
+        column(6, div(class="content-box", h4("📊 Thống kê số ngày nằm viện (LOS)"), plotlyOutput("los_plot")))
       ),
       fluidRow(
         column(6, div(class="content-box", h4("🔍 5 chẩn đoán kèm theo"), plotlyOutput("injuries_plot"))),
-        column(6, div(class="content-box", h4("📊 Thống kê số ngày nằm viện (LOS)"), plotlyOutput("los_plot")))
+        column(6, div(class="content-box", h4("📑 Bảng chẩn thương thường gặp"), DTOutput("injuries_table")))
       )
     )
   }
@@ -293,20 +292,51 @@ server <- function(input, output, session) {
     )
   }
   
+  render_adm_status <- function() {
+    tagList(
+      h3("🏥 Tình trạng nhập viện trong các ca TNGT"),
+      
+      div(class = "content-box",
+          h4("📊 Phân bố nguồn nhập viện"),
+          plotlyOutput("los_by_source_plot")
+      ),
+      h3("🏥 Tình trạng nhập viện trong các ca TNGT"),
   
-  render_los_source  <- function() tagList(h3("🚑 LOS theo nguồn nhập viện"), plotlyOutput("los_by_source_plot"))
-  render_sep_mode    <- function() tagList(h3("💀 Tử vong / Ra viện"), plotlyOutput("sep_mode_plot"))
-  render_adm_analysis<- function() tagList(h3("🏥 Phân tích loại nhập viện"), plotlyOutput("admtype_plot"))
-  render_info <- function(){
-    tagList(h3("ℹ️ Thông tin số liệu"))
+      div(class = "content-box",
+          h4("💊 Số ngày điều trị trung bình theo từng loại nhập viện"),
+          plotlyOutput("admtype_plot")
+      )
+    )
+  }
+  
+  render_sep_mode <- function() tagList(h3("🩺 Tình trạng ra viện"), plotlyOutput("sep_mode_plot"))
+  
+  render_info <- function() {
+    tagList(
+      h3("ℹ️ Thông tin số liệu"),
+      div(class = "content-box",
+          HTML(markdown::markdownToHTML(text = readLines("README.md"), fragment.only = TRUE))
+      )
+    )
   }
   
   render_quality <- function(){
-    tagList(h3("🔍 Đánh giá chất lượng số liệu (chờ cập nhật)"))
+    tagList(
+      h3("🔍 Đánh giá chất lượng số liệu (chờ cập nhật)"),
+      div(class = "content-box",
+          HTML(markdown::markdownToHTML(text = readLines("document/danh_gia_chat_luong.md"), fragment.only = TRUE))
+      )
+    )
   }
+  
   render_about <- function(){
-    tagList(h3("❓ Hướng dẫn & Giới thiệu"))
-  }
+    tagList(
+      h3("❓ Hướng dẫn & Giới thiệu"),
+      div(class = "content-box",
+          HTML(markdown::markdownToHTML(text = readLines("document/khai_thac_du_lieu.md"), fragment.only = TRUE))
+      )
+    )
+}
   
   output$pageContent <- renderUI({
     hash <- sub("^#!","",session$clientData$url_hash)
@@ -315,9 +345,8 @@ server <- function(input, output, session) {
            "data_viewer" = render_data_viewer(),
            "upload" = render_upload(),
            "freq" = render_freq(),
-           "los_source" = render_los_source(),
+           "adm_status" = render_adm_status(),
            "sep_mode" = render_sep_mode(),
-           "adm_analysis" = render_adm_analysis(),
            "quality" = render_quality(),
            "info" = render_info(),
            "about" = render_about(),
