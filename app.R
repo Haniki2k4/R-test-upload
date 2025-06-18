@@ -14,6 +14,7 @@ library(DT)
 library(plotly)
 library(tidyverse)
 
+
 if (interactive()) {
   write_rds(read_xlsx("data/admission.xlsx"), "data/admission.rds")
   write_rds(read_xlsx("data/diagnosis.xlsx"), "data/diagnosis.rds")
