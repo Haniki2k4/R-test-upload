@@ -14,7 +14,6 @@ library(DT)
 library(plotly)
 library(tidyverse)
 
-
 write_rds(read_xlsx("data/admission.xlsx"), "data/admission.rds")
 write_rds(read_xlsx("data/diagnosis.xlsx"), "data/diagnosis.rds")
 write_rds(read_xlsx("data/icd10.xlsx"), "data/icd10.rds")
@@ -22,7 +21,6 @@ write_rds(read_xlsx("data/icd10.xlsx"), "data/icd10.rds")
 admission_df <- reactiveVal(readRDS("data/admission.rds"))
 diagnosis_df <- reactiveVal(readRDS("data/diagnosis.rds"))
 icd10_df     <- reactiveVal(readRDS("data/icd10.rds"))
-
 
 
 # -- 1. UI
@@ -411,7 +409,7 @@ server <- function(input, output, session) {
     df <- computed()$transport %>% count(sepmode) %>%
       mutate(label = paste0(sep_mode_labels[sepmode], " (", round(100 * n / sum(n), 1), "%)"))
     plot_ly(df, labels = ~label, values = ~n, type = "pie",
-            marker = list(colors = RColorBrewer::brewer.pal(n = max(3, nrow(df)), name = "Set3")[1:nrow(df)])) %>%
+            marker = list(colors = RColorBrewer::brewer.pal(n = nrow(df), name = "Set3"))) %>%
       layout(title = "Tình trạng ra viện / tử vong",
              margin = list(t = 50))
   })
