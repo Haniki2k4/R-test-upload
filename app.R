@@ -411,7 +411,7 @@ server <- function(input, output, session) {
     df <- computed()$transport %>% count(sepmode) %>%
       mutate(label = paste0(sep_mode_labels[sepmode], " (", round(100 * n / sum(n), 1), "%)"))
     plot_ly(df, labels = ~label, values = ~n, type = "pie",
-            marker = list(colors = RColorBrewer::brewer.pal(n = nrow(df), name = "Set3"))) %>%
+            marker = list(colors = RColorBrewer::brewer.pal(n = max(3, nrow(df)), name = "Set3")[1:nrow(df)])) %>%
       layout(title = "Tình trạng ra viện / tử vong",
              margin = list(t = 50))
   })
