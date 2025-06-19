@@ -289,7 +289,9 @@ server <- function(input, output, session) {
       div(class="content-box", plotlyOutput("gender_age_plot")),
       fluidRow(
         column(6, div(class="content-box", DTOutput("injury_tab"))),
-        column(6, div(class="content-box", verbatimTextOutput("chi_result")))
+        column(6, div(class="content-box", 
+                      verbatimTextOutput("chi_result"),
+                      textOutput("chi_interpret")))
       )
     )
   }
@@ -415,6 +417,15 @@ server <- function(input, output, session) {
     server = TRUE
   )
   output$chi_result <- renderPrint(analysis_data()$chi)
+  output$chi_interpret <- renderText({
+    p_val <- analysis_data()$chi$p.value
+    
+    if (p_val < 0.05) {
+      "📌 Có sự khác biệt có ý nghĩa thống kê giữa các nhóm tuổi về loại chấn thương chính. (p < 0.05)"
+    } else {
+      "📌 Không có sự khác biệt có ý nghĩa thống kê giữa các nhóm tuổi về loại chấn thương chính. (p ≥ 0.05)"
+    }
+  })
   
   output$gender_age_plot <- renderPlotly({
     dat <- analysis_data()$gender_age
