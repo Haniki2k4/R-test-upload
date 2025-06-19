@@ -3486,10 +3486,10 @@
   },
   "files": {
     ".RData": {
-      "checksum": "9bd4232ad2e435fcf21c925fd963db24"
+      "checksum": "4dbaf7fe7a38b503a38f9e51b5b6e758"
     },
     "app.R": {
-      "checksum": "4a2b6b6cd9ca091f713163b0ce09290f"
+      "checksum": "4537b0aa4f1769e092bf006e753492e6"
     },
     "data/admission.rds": {
       "checksum": "3793071c03fc94d77c9f00f7a18e61fe"
@@ -3513,7 +3513,7 @@
       "checksum": "6e134df4a1998dbbec35d4fe2345110c"
     },
     "document/khai_thac_du_lieu.md": {
-      "checksum": "0bdc71cbf15c05e4069b90dad211295c"
+      "checksum": "6ebfdf9e31a346d5f99a015f79b280be"
     },
     "README.md": {
       "checksum": "dbab538ca266ee986187a632b8428525"

@@ -128,7 +128,7 @@ ui <- fluidPage(
       a("Thông tin số liệu", href = "#!info", id = "nav-info", class = "nav-link"),
       a("Đánh giá chất lượng số liệu", href = "#!quality", id = "nav-quality", class = "nav-link"),
       strong("❓ Hướng dẫn & Giới thiệu"),
-      a("Hướng dẫn & Giới thiệu", href = "#!about", id = "nav-about", class = "nav-link")
+      a("Hướng dẫn khai thác dữ liệu", href = "#!about", id = "nav-about", class = "nav-link")
   ),
   
   # Main content
@@ -235,12 +235,12 @@ server <- function(input, output, session) {
           )
       ),
       fluidRow(
-        column(6, div(class="content-box", h4("🔝 10 trường hợp TNGT"), DTOutput("top10_table"))),
-        column(6, div(class="content-box", h4("📊 Thống kê số ngày nằm viện (LOS)"), plotlyOutput("los_plot")))
+        column(6, div(class="content-box", h4("🔝 10 mã ICD chẩn đoán TNGT thường gặp"), DTOutput("top10_table"))),
+        column(6, div(class="content-box", h4("📊 Thống kê số ngày nằm viện theo mã (LOS)"), plotlyOutput("los_plot")))
       ),
       fluidRow(
-        column(6, div(class="content-box", h4("🔍 5 chẩn đoán kèm theo"), plotlyOutput("injuries_plot"))),
-        column(6, div(class="content-box", h4("📑 Bảng chẩn thương thường gặp"), DTOutput("injuries_table")))
+        column(6, div(class="content-box", h4("🔍 Top 5 mã chẩn đoán kèm theo"), plotlyOutput("injuries_plot"))),
+        column(6, div(class="content-box", h4("📑 Bảng các loại mã chấn thương thường gặp"), DTOutput("injuries_table")))
       )
     )
   }
@@ -297,19 +297,27 @@ server <- function(input, output, session) {
   render_adm_status <- function() {
     tagList(
       h3("🏥 Tình trạng nhập viện trong các ca TNGT"),
-      
-      div(class = "content-box",
-          h4("📊 Phân bố nguồn nhập viện"),
-          plotlyOutput("los_by_source_plot")
+      fluidRow(
+        column(6,
+               div(class = "content-box",
+                   h4("📊 Phân bố nguồn nhập viện"),
+                   plotlyOutput("los_by_source_plot")
+               )
+        ),
+        column(6,
+               div(class = "content-box",
+                   h4("📈 Số ngày điều trị trung bình theo nguồn nhập viện"),
+                   plotlyOutput("los_source_mean_plot")
+               )
+        )
       ),
-      h3("🏥 Tình trạng nhập viện trong các ca TNGT"),
-  
       div(class = "content-box",
-          h4("💊 Số ngày điều trị trung bình theo từng loại nhập viện"),
+          h4("📈 Số ngày điều trị trung bình theo từng loại nhập viện"),
           plotlyOutput("admtype_plot")
       )
     )
   }
+  
   
   render_sep_mode <- function() tagList(h3("🩺 Tình trạng ra viện"), plotlyOutput("sep_mode_plot"))
   
@@ -324,7 +332,7 @@ server <- function(input, output, session) {
   
   render_quality <- function(){
     tagList(
-      h3("🔍 Đánh giá chất lượng số liệu (chờ cập nhật)"),
+      h3("🔍 Đánh giá chất lượng số liệu"),
       div(class = "content-box",
           includeMarkdown("document/danh_gia_chat_luong.md")
       )
@@ -333,7 +341,7 @@ server <- function(input, output, session) {
   
   render_about <- function(){
     tagList(
-      h3("❓ Hướng dẫn & Giới thiệu"),
+      h3("❓ Hướng dẫn khai thác dữ liệu"),
       div(class = "content-box",
           includeMarkdown("document/khai_thac_du_lieu.md")
       )
@@ -423,7 +431,8 @@ server <- function(input, output, session) {
   
   
   # Labels cho pie charts
-  sep_mode_labels <- c(A="Xuất viện",B="Chuyển viện",D="Tử vong",H="Chăm sóc tại nhà",N="Không rõ",S="Chuyển chăm sóc",T="Khác")
+  sep_mode_labels <- c(A="Xuất viện",B="Chuyển viện",D="Tử vong",H="Chăm sóc tại nhà",N="Không rõ",S="Chuyển chăm sóc chuyên sâu",T="Chuyển đến cơ sở/loại hình
+chăm sóc khác", Z = "Khác")
   adm_source_labels <- c(A="Nhà riêng",B="Nơi khác",H="Bệnh viện khác",N="Dưỡng lão",S="Cơ sở y tế",T="Khác",Y="Sinh tại viện")
   
   output$los_by_source_plot <- renderPlotly({
@@ -434,6 +443,22 @@ server <- function(input, output, session) {
       layout(title = "Phân bố nguồn nhập viện",
              xaxis = list(title = "Nguồn nhập viện"),
              yaxis = list(title = "Số ca"),
+             margin = list(t = 50))
+  })
+  
+  output$los_source_mean_plot <- renderPlotly({
+    df <- computed()$transport %>%
+      group_by(admsource) %>%
+      summarise(mean_los = mean(los, na.rm = TRUE)) %>%
+      mutate(source_label = adm_source_labels[admsource])
+    
+    colors <- rep(c("#5bc0de", "#78c2ad"), length.out = nrow(df))
+    
+    plot_ly(df, x = ~reorder(source_label, -mean_los), y = ~mean_los,
+            type = "bar", marker = list(color = colors)) %>%
+      layout(title = "LOS trung bình theo nguồn nhập viện (TNGT)",
+             xaxis = list(title = "Nguồn nhập viện"),
+             yaxis = list(title = "Số ngày nằm viện trung bình"),
              margin = list(t = 50))
   })
   
@@ -450,18 +475,21 @@ server <- function(input, output, session) {
   
   output$admtype_plot <- renderPlotly({
     df <- computed()$transport %>%
-      count(admtype) %>%
-      arrange(n)
-    plot_ly(df, x = ~n, y = ~reorder(admtype, n), type = "bar",
+      group_by(admtype) %>%
+      summarise(mean_los = mean(los, na.rm = TRUE)) %>%
+      arrange(mean_los)
+    
+    plot_ly(df, x = ~mean_los, y = ~reorder(admtype, mean_los), type = "bar",
             orientation = 'h',
-            marker = list(color = RColorBrewer::brewer.pal(n = nrow(df), name = "Set3"))) %>%
+            marker = list(color = RColorBrewer::brewer.pal(n = max(3, nrow(df)), name = "Set3"))) %>%
       layout(
-        title = "LOS theo loại nhập viện", 
+        title = "Số ngày điều trị trung bình theo loại nhập viện", 
         yaxis = list(title = "Loại nhập viện"), 
-        xaxis = list(title = "Số ca"),
+        xaxis = list(title = "Số ngày điều trị trung bình (LOS)"),
         margin = list(t = 50)
       )
   })
+  
   
   
   
